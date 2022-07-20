@@ -41,17 +41,39 @@ cdef class Mating:
     cdef void set_number_of_inputs(self, int number_of_inputs):
         self.number_of_inputs = number_of_inputs
 
-    cdef set_iteration(self, int iteration):
+    cdef void set_iteration(self, int iteration):
         self.iteration = iteration
 
-    cdef set_default_weigth(self, double weight):
+    cdef void set_default_weigth(self, double weight):
         self.weight = weight
 
-    cdef set_mutation_rate(self, double mutation_rate):
+    cdef void set_mutation_rate(self, double mutation_rate):
         self.mutation_rate = mutation_rate
 
-    cdef set_order_number(self, int init_order_number):
+    cdef void set_order_number(self, int init_order_number):
         self.init_order_number = init_order_number
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef void set_input_indexes(self, int[:] input_indexes):
+
+        cdef Py_ssize_t i
+        cdef int length = input_indexes.size
+        self.input_indexes = np.empty(length, dtype = np.int32)
+
+        for i in prange(length, nogil = True):
+            self.input_indexes[i] = input_indexes[i]
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef void set_output_indexes(self, int[:] output_indexes):
+
+        cdef Py_ssize_t i
+        cdef int length = output_indexes.size
+        self.output_indexes = np.empty(length, dtype = np.int32)
+
+        for i in prange(length, nogil = True):
+            self.output_indexes[i] = output_indexes[i]
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -62,6 +84,8 @@ cdef class Mating:
                                   int number_of_inputs,
                                   int iteration,
                                   int init_order_number,
+                                  int [:] input_indexes,
+                                  int [:] output_indexes,
                                   double WEIGHT,
                                   double MUTATION_RATE):
 
@@ -80,6 +104,18 @@ cdef class Mating:
         self.init_order_number = init_order_number
         self.weight = WEIGHT
         self.mutation_rate = MUTATION_RATE
+
+        length = input_indexes.size
+        self.input_indexes = np.empty(length, dtype = np.int32)
+
+        for i in prange(length, nogil = True):
+            self.input_indexes[i] = input_indexes[i]
+
+        length = output_indexes.size
+        self.output_indexes = np.empty(length, dtype = np.int32)
+
+        for i in prange(length, nogil = True):
+            self.output_indexes[i] = output_indexes[i]
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -144,7 +180,8 @@ cdef class Mating:
 
         factory.mutate_neurons_genes(self.neuron_prb_del,
                                      self.activation_functions,
-                                     self.number_of_inputs,
+                                     self.input_indexes,
+                                     self.output_indexes,
                                      self.iteration,
                                      self.weight,
                                      self.mutation_rate)

@@ -74,9 +74,11 @@ cdef class GrandNetworkFactory_FullInput_NoInter(Factory):
     '''
 
     cdef void create_connections_genes(self,
+                                       int number_of_neurons,
                                        int number_of_input_neurons,
-                                       int number_of_inputs,
+                                       int number_of_output_neurons,
                                        int[:] input_indexes,
+                                       int[:] output_indexes,
                                        double WEIGHT,
                                        double MUTATION_RATE)
 
@@ -152,7 +154,7 @@ cdef class NetworkFactory(Factory):
                                                       Network parent_1,
                                                       Network parent_2)
     '''
-    Here rather difficult procedure takes place.
+    Here a rather difficult procedure takes place.
 
     1. Take neuron from self.created_neurons_genes
     2. Find its old counterpart (from self.matches)
@@ -166,7 +168,8 @@ cdef class NetworkFactory(Factory):
     cdef void mutate_neurons_genes(self,
                                    double prb_deleteion,
                                    int [:] activation_functions,
-                                   int number_of_inputs,
+                                   int [:] input_indexes,
+                                   int [:] output_indexes,
                                    int iteration,
                                    double WEIGHT,
                                    double MUTATION)
@@ -208,7 +211,8 @@ cdef class NetworkFactory(Factory):
                      double[:] pre_mutation_mutation_genes,
                      double[:, :] pre_mutation_connections_genes,
                      int neurons_to_add,
-                     int number_of_inputs,
+                     int[:] input_indexes,
+                     int[:] output_indexes,
                      int iteration,
                      int[:] activation_functions,
                      double weight,

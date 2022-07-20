@@ -30,6 +30,8 @@ cdef class Mating:
     cdef int iteration
     cdef double weight
     cdef double mutation_rate
+    cdef int[:] input_indexes
+    cdef int[:] output_indexes
     cdef int init_order_number
 
     cdef void set_efficiency_limit(self, double limit)
@@ -42,13 +44,17 @@ cdef class Mating:
 
     cdef void set_number_of_inputs(self, int number_of_inputs)
 
-    cdef set_iteration(self, int iteration)
+    cdef void set_iteration(self, int iteration)
 
-    cdef set_default_weigth(self, double weight)
+    cdef void set_default_weigth(self, double weight)
 
-    cdef set_mutation_rate(self, double mutation_rate)
+    cdef void set_mutation_rate(self, double mutation_rate)
 
-    cdef set_order_number(self, int order_number)
+    cdef void set_order_number(self, int order_number)
+
+    cdef void set_input_indexes(self, int[:] input_indexes)
+
+    cdef void set_output_indexes(self, int[:] output_indexes)
 
     cdef void set_mutation_params(self,
                                   double neuron_prb_del,
@@ -57,6 +63,8 @@ cdef class Mating:
                                   int number_of_inputs,
                                   int iteration,
                                   int init_order_number,
+                                  int [:] input_indexes,
+                                  int [:] output_indexes,
                                   double WEIGHT,
                                   double MUTATION_RATE)
 
