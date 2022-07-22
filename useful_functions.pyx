@@ -3,8 +3,11 @@ import numpy as np
 cimport numpy as np
 from cython.parallel import prange
 from libc.stdlib cimport rand, srand, RAND_MAX
+from libc.math cimport sqrt
 cdef extern from "limits.h":
     int INT_MAX
+cdef extern from "math.h" :
+    long lround(double x) nogil
 from libc.time cimport time
 srand(time(NULL))
 
@@ -119,8 +122,14 @@ cdef class UsefulFunctions:
                                  int index) nogil:
 
         # Helper function. Changes weight and limits it by 0.03 and 0.97
-        # to left space for ptentially useful mutations
+        # to left space for potentially useful mutations
 
         weights[index]  = (weights[index]+rand() / (RAND_MAX * 1.0)*(0.05-(-0.05))-0.05) * \
                           (0.03<weights[index]<0.97) + (0.97 * (weights[index]>0.97)) +\
                           (0.03 * (weights[index]<0.03))
+
+    cdef double sqrt(self, double x) nogil:
+        return sqrt(x)
+
+    cdef int round(self, double x) nogil:
+        return lround(x)

@@ -37,3 +37,7 @@ cdef class UsefulFunctions:
                                  int index) nogil
         # Helper function. Changes weight and limits it by 0.03 and 0.97
         # to left space for ptentially useful mutations
+
+    cdef double sqrt(self, double x) nogil
+
+    cdef int round(self, double x) nogil
