@@ -16,6 +16,9 @@ cdef UsefulFunctions UF
 UF = UsefulFunctions()
 
 
+class Exctinction(Exception):
+    pass
+
 cdef class Mating:
 
     cdef void set_efficiency_limit(self, double limit):
@@ -135,8 +138,15 @@ cdef class Mating:
 
         cdef double [:] efficiencies = np.empty(number_of_networks, dtype = np.float64) # create this to use gil inside cycle
                                                                                         # otherwise cannot
+        cdef int above_limit_counter = 0         # to check for extinction
         for i in range(number_of_networks):
             efficiencies[i] = networks[i].efficiency
+            if efficiencies[i] >= self.limit:
+                above_limit_counter += 1
+
+        if above_limit_counter < 2:
+            raise Exctinction('Too few networks with efficiency above limit')
+
 
 
         for i in range(number_of_networks):
