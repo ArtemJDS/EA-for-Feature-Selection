@@ -1,6 +1,6 @@
 cimport numpy as np
 from network cimport Network
-from useful_functions cimport UsefulFunctions
+from useful_functions cimport twodim_genes_cleaner, onedim_genes_cleaner, randint, change_gene_weigth, sqroot, round
 from factories cimport NetworkFactory
 from libc.stdlib cimport rand, srand, RAND_MAX
 cdef extern from "limits.h":
@@ -10,10 +10,6 @@ srand(time(NULL))
 import cython
 import numpy as np
 from cython.parallel import prange
-
-
-cdef UsefulFunctions UF
-UF = UsefulFunctions()
 
 
 class Exctinction(Exception):
@@ -154,12 +150,12 @@ cdef class Mating:
             if efficiencies[i] < self.limit:
                     with nogil:
                         while parent_1 == -1:
-                            rand_n = UF.randint(0, number_of_networks)
+                            rand_n = randint(0, number_of_networks)
                             if efficiencies[rand_n] >= rand() / RAND_MAX:
                                 parent_1 = rand_n
 
                         while parent_2 == -1:
-                            rand_n = UF.randint(0, number_of_networks)
+                            rand_n = randint(0, number_of_networks)
                             if efficiencies[rand_n] >= rand() / RAND_MAX:
                                 parent_2 = rand_n
 

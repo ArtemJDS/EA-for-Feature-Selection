@@ -1,6 +1,6 @@
 cimport numpy as np
 from network cimport Network
-from useful_functions cimport UsefulFunctions
+from useful_functions cimport twodim_genes_cleaner, onedim_genes_cleaner, randint, change_gene_weigth, sqroot, round
 from libc.stdlib cimport rand, srand, RAND_MAX
 cdef extern from "limits.h":
     int INT_MAX
@@ -10,8 +10,6 @@ import cython
 import numpy as np
 from cython.parallel import prange
 
-cdef UsefulFunctions UF
-UF = UsefulFunctions()
 
 
 cdef class Factory():
@@ -59,7 +57,7 @@ cdef class GrandNetworkFactory_FullInput_NoInter(Factory):
                                         number_of_output_neurons))
 
             self.neurons_genes[i][2] = 0     # Since this is the 0'th iteration
-            self.neurons_genes[i][3] = activation_functions[UF.randint(0,length_of_activation_f)]
+            self.neurons_genes[i][3] = activation_functions[randint(0,length_of_activation_f)]
 
             self.mutation_genes[i] = MUTATION_RATE
 
@@ -81,7 +79,7 @@ cdef class GrandNetworkFactory_FullInput_NoInter(Factory):
         cdef int number_of_available_inputs = input_indexes.size
         cdef int number_of_available_outputs = output_indexes.size
         for i in prange(number_of_input_neurons, nogil = True):
-            self.connections_genes[i][0] = input_indexes[UF.randint(0, number_of_available_inputs)]
+            self.connections_genes[i][0] = input_indexes[randint(0, number_of_available_inputs)]
 
             #how input indexes are assigned to neurons. previously number of inputs should
             #have matched number of input neurons. Now they are assigned randomly
@@ -94,7 +92,7 @@ cdef class GrandNetworkFactory_FullInput_NoInter(Factory):
 
         for i in prange(number_of_output_neurons, nogil = True):
             self.connections_genes[i+number_of_input_neurons][0] = (i+number_of_neurons-number_of_output_neurons) /1.
-            self.connections_genes[i+number_of_input_neurons][1] = output_indexes[UF.randint(0, number_of_available_outputs)]
+            self.connections_genes[i+number_of_input_neurons][1] = output_indexes[randint(0, number_of_available_outputs)]
             self.connections_genes[i+number_of_input_neurons][2] = WEIGHT
             self.connections_genes[i+number_of_input_neurons][3] = 1.
             self.connections_genes[i+number_of_input_neurons][4] = 0.                                   # Since this is the 0'th iteration
@@ -197,12 +195,12 @@ cdef class NetworkFactory(Factory):
 
         if number_of_neurons_in_parents%2 == 0:
             number_of_neurons_in_child = number_of_neurons_in_parents//2\
-                                                + UF.randint(0,3) - 1
+                                                + randint(0,3) - 1
 
         else:
             number_of_neurons_in_child = (number_of_neurons_in_parents+\
                                         1*(R >= 0.5) - 1*(R < 0.5))//2 \
-                                        + UF.randint(0,3)-1
+                                        + randint(0,3)-1
 
 
         self.created_neurons_genes = np.empty((number_of_neurons_in_child, 4),
@@ -214,7 +212,7 @@ cdef class NetworkFactory(Factory):
 
         for i in prange(number_of_neurons_in_child, nogil=True):
 
-            self.matches[i][0] = UF.randint(0, the_longest_one)      # old neuron || 1/2 parent || new neuron || used status, its index ([i]) must be identical to 'new neuron'
+            self.matches[i][0] = randint(0, the_longest_one)      # old neuron || 1/2 parent || new neuron || used status, its index ([i]) must be identical to 'new neuron'
             self.matches[i][2] = i
             self.matches[i][3] = 0
 
@@ -385,7 +383,7 @@ cdef class NetworkFactory(Factory):
             for k in prange(length_of_matches):
                 self.matches[k][3] = 0
 
-        self.created_connections_genes = UF.twodim_genes_cleaner(long_connections_genes,
+        self.created_connections_genes = twodim_genes_cleaner(long_connections_genes,
                                                                  3,
                                                                  np.float64,
                                                                  0)
@@ -422,10 +420,10 @@ cdef class NetworkFactory(Factory):
                                        i)
             else:
                 if self.created_mutation_genes[i] >= rand() / (RAND_MAX * 1.0):
-                    self.created_neurons_genes[i][3] = activation_functions[UF.randint(0,length_of_activation_f)]
+                    self.created_neurons_genes[i][3] = activation_functions[randint(0,length_of_activation_f)]
 
                 if self.created_mutation_genes[i] >= rand() / (RAND_MAX * 1.0):
-                    UF.change_gene_weigth(self.created_mutation_genes, i)
+                    change_gene_weigth(self.created_mutation_genes, i)
 
 
         self.neurons_genes = np.empty((length_of_neurons_genes+neurons_to_be_added, width_of_neurons_genes), dtype = np.int32)
@@ -446,14 +444,14 @@ cdef class NetworkFactory(Factory):
                                                  WEIGHT,
                                                  MUTATION)
 
-        self.mutation_genes = UF.onedim_genes_cleaner(self.mutation_genes,
+        self.mutation_genes = onedim_genes_cleaner(self.mutation_genes,
                                                       np.float64,
                                                       -1)
-        self.neurons_genes = UF.twodim_genes_cleaner(self.neurons_genes,
+        self.neurons_genes = twodim_genes_cleaner(self.neurons_genes,
                                                      0,
                                                      np.int32,
                                                      -1)
-        self.connections_genes = UF.twodim_genes_cleaner(self.connections_genes,
+        self.connections_genes = twodim_genes_cleaner(self.connections_genes,
                                                          3,
                                                          np.float64,
                                                          -1)
@@ -489,7 +487,7 @@ cdef class NetworkFactory(Factory):
                                           i)
 
                     if self.connections_genes[i][5] >= rand() / (RAND_MAX * 1.0):
-                        UF.change_gene_weigth(self.connections_genes[i], 5)
+                        change_gene_weigth(self.connections_genes[i], 5)
 
         self.connections_genes = self.add_connection(self.neurons_genes,
                                                      self.connections_genes,
@@ -509,7 +507,7 @@ cdef class NetworkFactory(Factory):
         for i in range(length):
             matches[self.neurons_genes[i][0]] = i
 
-        self.connections_genes = UF.twodim_genes_cleaner(self.connections_genes, 3, np.float64, -1)
+        self.connections_genes = twodim_genes_cleaner(self.connections_genes, 3, np.float64, -1)
 
         self.matrix = self.initialize_connections_with_reordering(self.matrix,
                                                self.connections_genes,
@@ -595,7 +593,7 @@ cdef class NetworkFactory(Factory):
        cdef int output_neurons_counter = 0
 
        for i in prange(neurons_to_add, nogil = True):
-           types_of_added_neurons[i] = UF.randint(0,3)   # Here type of added neurons may be changed e.g. randint(1,3)
+           types_of_added_neurons[i] = randint(0,3)   # Here type of added neurons may be changed e.g. randint(1,3)
 
        for i in range(neurons_to_add):
            if types_of_added_neurons[i] == 0:
@@ -623,12 +621,12 @@ cdef class NetworkFactory(Factory):
            neurons_genes[i+old_neurons_length][0] = i+old_neurons_length
            neurons_genes[i+old_neurons_length][1] = types_of_added_neurons[i]
            neurons_genes[i+old_neurons_length][2] = iteration
-           neurons_genes[i+old_neurons_length][3] = activation_functions[UF.randint(0,length_of_activation_f)]
+           neurons_genes[i+old_neurons_length][3] = activation_functions[randint(0,length_of_activation_f)]
            mutation_genes[i+old_neurons_length] = weight
 
            if types_of_added_neurons[i] == 0:
 
-               connections_genes[counter+old_connections_length][0] = input_indexes[UF.randint(0,number_of_available_inputs)]/1.
+               connections_genes[counter+old_connections_length][0] = input_indexes[randint(0,number_of_available_inputs)]/1.
                connections_genes[counter+old_connections_length][1] = (i+old_neurons_length)/1.
                connections_genes[counter+old_connections_length][2] = weight
                connections_genes[counter+old_connections_length][3] = 1.
@@ -639,7 +637,7 @@ cdef class NetworkFactory(Factory):
 
            if types_of_added_neurons[i] == 2:
                connections_genes[counter+old_connections_length][0] = (i+old_neurons_length)/1.
-               connections_genes[counter+old_connections_length][1] = output_indexes[UF.randint(0, number_of_available_outputs)]/1.
+               connections_genes[counter+old_connections_length][1] = output_indexes[randint(0, number_of_available_outputs)]/1.
                connections_genes[counter+old_connections_length][2] = weight
                connections_genes[counter+old_connections_length][3] = 1.
                connections_genes[counter+old_connections_length][4] = iteration
@@ -709,9 +707,9 @@ cdef class NetworkFactory(Factory):
 
        cdef int length = neurons_genes.shape[0]
        cdef int width = neurons_genes.shape[1]
-       cdef int what_parameter_is_changed = UF.randint(0, width)
+       cdef int what_parameter_is_changed = randint(0, width)
 
-       cdef int random_neuron = neurons_genes[UF.randint(0, length)][0]
+       cdef int random_neuron = neurons_genes[randint(0, length)][0]
 
        if what_parameter_is_changed == 0:
 
@@ -730,7 +728,7 @@ cdef class NetworkFactory(Factory):
 
        elif what_parameter_is_changed == 2:
 
-           UF.change_gene_weigth(connections_genes[order_number], what_parameter_is_changed)
+           change_gene_weigth(connections_genes[order_number], what_parameter_is_changed)
 
        elif what_parameter_is_changed == 3:
 
@@ -775,8 +773,8 @@ cdef class NetworkFactory(Factory):
                mean_mutation_rate = mean_mutation_rate + new_connections_genes[i][5]/connections_genes_length
 
        for i in prange(number_of_connections_to_be_added, nogil = True):
-           new_connections_genes[i+connections_genes_length][0] = neurons_genes[UF.randint(0, neurons_genes_length)][0]/1.
-           new_connections_genes[i+connections_genes_length][1] = neurons_genes[UF.randint(0, neurons_genes_length)][0]/1.
+           new_connections_genes[i+connections_genes_length][0] = neurons_genes[randint(0, neurons_genes_length)][0]/1.
+           new_connections_genes[i+connections_genes_length][1] = neurons_genes[randint(0, neurons_genes_length)][0]/1.
            new_connections_genes[i+connections_genes_length][2] = mean_weight
            new_connections_genes[i+connections_genes_length][3] = 1.       # Neurons are added in active state
            new_connections_genes[i+connections_genes_length][4] = iteration
