@@ -118,10 +118,10 @@ cdef class GrandNetworkFactory_FullInput_NoInter(Factory):
     cdef Network get_network(self, int order_number)
 
 
-    cdef double [:,:]  initialize_connections_no_reordering(self,
-                                                            double [:,:] matrix,
-                                                            double [:,:] connections_genes,
-                                                            int number_of_inputs ) nogil
+    cdef double [:,:]  initialize_matrix(self,
+                                         double [:,:] matrix,
+                                         double [:,:] connections_genes,
+                                         int number_of_inputs ) nogil
 
     #Helper function. Adds connections from connections_genes to a matrix
 
@@ -138,6 +138,7 @@ cdef class NetworkFactory(Factory):
     cdef public int [:,:] created_neurons_genes
     cdef public double [:] created_mutation_genes
     cdef public double [:,:] created_connections_genes
+    cdef public dict second_matches
 
     cdef void create_neurons_genes_through_mating(self,
                                                   Network parent_1,
@@ -218,14 +219,10 @@ cdef class NetworkFactory(Factory):
                      double weight,
                      double mutation_rate)
 
-    cdef  double [:,:] initialize_connections_with_reordering(self,
-                                                              double [:,:] matrix,
-                                                              double [:,:] connections_genes,
-                                                              int number_of_inputs,
-                                                              dict matches,
-                                                              int[:, :] neurons_genes
-                                                              ) nogil
-    #Helper function. Adds connections from connections_genes to a matrix
+    cdef double [:,:]  initialize_matrix(self,
+                                         double [:,:] matrix,
+                                         double [:,:] connections_genes,
+                                         int number_of_inputs ) nogil
 
     cdef void connection_change(self,
                                 int [:,:] neurons_genes,

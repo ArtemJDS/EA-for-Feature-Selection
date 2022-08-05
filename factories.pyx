@@ -10,8 +10,6 @@ import cython
 import numpy as np
 from cython.parallel import prange
 
-
-
 cdef class Factory():
 
     '''
@@ -105,9 +103,9 @@ cdef class GrandNetworkFactory_FullInput_NoInter(Factory):
 
         self.matrix = np.zeros((self.neurons_genes.shape[0], self.neurons_genes.shape[0]+\
                                 number_of_inputs), dtype = np.float64)
-        self.matrix = self.initialize_connections_no_reordering(self.matrix,
-                                                                self.connections_genes,
-                                                                number_of_inputs)
+        self.matrix = self.initialize_matrix(self.matrix,
+                                             self.connections_genes,
+                                             number_of_inputs)
 
     cdef Network get_network(self, int order_number):
 
@@ -122,10 +120,10 @@ cdef class GrandNetworkFactory_FullInput_NoInter(Factory):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cdef double [:,:]  initialize_connections_no_reordering(self,
-                                                            double [:,:] matrix,
-                                                            double [:,:] connections_genes,
-                                                            int number_of_inputs ) nogil :
+    cdef double [:,:]  initialize_matrix(self,
+                                         double [:,:] matrix,
+                                         double [:,:] connections_genes,
+                                         int number_of_inputs ) nogil :
 
         cdef Py_ssize_t i
         cdef int from_
@@ -266,7 +264,6 @@ cdef class NetworkFactory(Factory):
                             self.created_neurons_genes[i][j] = parent_2.neurons_genes[self.matches[i][0]][j]
 
                     self.created_mutation_genes[i] = parent_2.mutation_genes[self.matches[i][0]]
-
     @cython.boundscheck(False)
     @cython.wraparound(False)
     cdef void create_connections_genes_through_mating(self,
@@ -277,10 +274,10 @@ cdef class NetworkFactory(Factory):
 
         cdef int length_parent_1 = parent_1.connections_genes.shape[0]
         cdef int length_parent_2 = parent_2.connections_genes.shape[0]
+        cdef int width = parent_1.connections_genes.shape[1]
 
         cdef int neurons_length_parent_1 = parent_1.neurons_genes.shape[0]
         cdef int neurons_length_parent_2 = parent_2.neurons_genes.shape[0]
-        cdef int width = parent_1.connections_genes.shape[1]
 
         cdef int length_of_matches = self.matches.shape[0]
         cdef int index_of_new_neuron_in_matches
@@ -320,7 +317,7 @@ cdef class NetworkFactory(Factory):
                                             self.matches[k][3] = 1
 
 
-                            if parent_1.connections_genes[j][1] < 0:
+                            if parent_1.connections_genes[j][1] < 0 :
                                 long_connections_genes[i *(length_of_matches+1) + length_of_matches][0] = index_of_new_neuron_in_matches/1.
                                 long_connections_genes[i *(length_of_matches+1) + length_of_matches][1] = parent_1.connections_genes[j][1]
                                 long_connections_genes[i *(length_of_matches+1) + length_of_matches][2] = parent_1.connections_genes[j][2]
@@ -330,7 +327,7 @@ cdef class NetworkFactory(Factory):
 
 
 
-                        if parent_1.connections_genes[j][0] < 0:
+                        if parent_1.connections_genes[j][0] < 0 and parent_1.connections_genes[j][1] == index_of_old_neuron:
                             long_connections_genes[i *(length_of_matches+1) + length_of_matches][0] = parent_1.connections_genes[j][0]
                             long_connections_genes[i *(length_of_matches+1) + length_of_matches][1] = index_of_new_neuron_in_matches/1.
                             long_connections_genes[i *(length_of_matches+1) + length_of_matches][2] = parent_1.connections_genes[j][2]
@@ -363,7 +360,6 @@ cdef class NetworkFactory(Factory):
 
                                             self.matches[k][3] = 1
 
-                                            continue
                             elif parent_2.connections_genes[j][1] < 0:
                                 long_connections_genes[i *(length_of_matches+1) + j][0] = index_of_new_neuron_in_matches/1.
                                 long_connections_genes[i *(length_of_matches+1) + j][1] = parent_2.connections_genes[j][1]
@@ -372,7 +368,7 @@ cdef class NetworkFactory(Factory):
                                 long_connections_genes[i *(length_of_matches+1) + j][4] = parent_2.connections_genes[j][4]
                                 long_connections_genes[i *(length_of_matches+1) + j][5] = parent_2.connections_genes[j][5]
 
-                        if parent_2.connections_genes[j][0] < 0:
+                        if parent_2.connections_genes[j][0] < 0 and parent_2.connections_genes[j][1] == index_of_old_neuron:
                             long_connections_genes[i *(length_of_matches+1) + length_of_matches][0] = parent_2.connections_genes[j][0]
                             long_connections_genes[i *(length_of_matches+1) + length_of_matches][1] = index_of_new_neuron_in_matches/1.
                             long_connections_genes[i *(length_of_matches+1) + length_of_matches][2] = parent_2.connections_genes[j][2]
@@ -382,7 +378,6 @@ cdef class NetworkFactory(Factory):
 
             for k in prange(length_of_matches):
                 self.matches[k][3] = 0
-
         self.created_connections_genes = twodim_genes_cleaner(long_connections_genes,
                                                                  3,
                                                                  np.float64,
@@ -467,7 +462,6 @@ cdef class NetworkFactory(Factory):
         cdef Py_ssize_t i, j
         cdef int length_of_connections_genes = self.connections_genes.shape[0]
         cdef int width_of_connections_genes=  self.connections_genes.shape[1]
-
         cdef int number_of_connections_to_be_added  = int(prb_deleteion * length_of_connections_genes) + 1 *(0 >= int(prb_deleteion * length_of_connections_genes))
 
         for i in range(length_of_connections_genes):
@@ -488,7 +482,6 @@ cdef class NetworkFactory(Factory):
 
                     if self.connections_genes[i][5] >= rand() / (RAND_MAX * 1.0):
                         change_gene_weigth(self.connections_genes[i], 5)
-
         self.connections_genes = self.add_connection(self.neurons_genes,
                                                      self.connections_genes,
                                                      number_of_connections_to_be_added,
@@ -501,19 +494,24 @@ cdef class NetworkFactory(Factory):
         self.matrix = np.zeros((self.neurons_genes.shape[0], self.neurons_genes.shape[0]+\
                                 number_of_inputs), dtype = np.float64)
         cdef Py_ssize_t i
-        cdef int length = self.neurons_genes.shape[0]
-        cdef dict matches = {}
+        cdef int neurons_genes_length = self.neurons_genes.shape[0]
+        cdef int connections_genes_length = self.connections_genes.shape[0]
+        self.second_matches = {}
 
-        for i in range(length):
-            matches[self.neurons_genes[i][0]] = i
+        for i in range(neurons_genes_length):
+            self.second_matches[self.neurons_genes[i][0]] = i
+            self.neurons_genes[i][0] = i
 
-        self.connections_genes = twodim_genes_cleaner(self.connections_genes, 3, np.float64, -1)
-
-        self.matrix = self.initialize_connections_with_reordering(self.matrix,
-                                               self.connections_genes,
-                                               number_of_inputs,
-                                               matches,
-                                               self.neurons_genes)
+        for i in range(connections_genes_length):
+            if self.connections_genes[i][0] >= 0:
+                self.connections_genes[i][0] = self.second_matches[self.connections_genes[i][0]]/1.
+            if self.connections_genes[i][1] >= 0:
+                self.connections_genes[i][1] = self.second_matches[self.connections_genes[i][1]]/1.
+        print(np.asarray(self.neurons_genes))
+        print(np.asarray(self.connections_genes))
+        self.matrix = self.initialize_matrix(self.matrix,
+                                             self.connections_genes,
+                                             number_of_inputs)
 
     cdef Network get_network(self, int order_number):
 
@@ -559,6 +557,44 @@ cdef class NetworkFactory(Factory):
 
        return  neurons_genes, connections_genes, mutation_genes
 
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef double [:,:]  initialize_matrix(self,
+                                        double [:,:] matrix,
+                                        double [:,:] connections_genes,
+                                        int number_of_inputs ) nogil :
+
+       cdef Py_ssize_t i
+       cdef int from_
+       cdef int to_
+       cdef int input_index
+       cdef int length
+
+       with gil: length = connections_genes.shape[0]
+
+       for i in range(length):
+           if connections_genes[i][3]==1 and connections_genes[i][1] >= 0: # checks activity status of a connection and whether it's not an output connection
+
+               # if it is input -> input neuron connection
+               if connections_genes[i][0]<0:
+
+                   with gil:
+                   # since numeration starts with -1
+                       from_ = abs(int(connections_genes[i][0]))-1
+                       to_ = int(connections_genes[i][1])
+
+                   matrix[to_][from_] = connections_genes[i][2]
+
+               # if it is neuron -> neuron connection
+               elif connections_genes[i][0]>=0:
+
+                   with gil:
+                       from_ = int(connections_genes[i][0]) + number_of_inputs     # Since there are inputs before neurons in every row
+                       to_ = int(connections_genes[i][1])
+
+                   matrix[to_][from_] = connections_genes[i][2]
+       return matrix
+
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -582,6 +618,11 @@ cdef class NetworkFactory(Factory):
 
        cdef int old_neurons_length = pre_mutation_neurons_genes.shape[0]
        cdef int neurons_width = pre_mutation_neurons_genes.shape[1]
+
+       cdef int last_ord_number = 0
+       for i in range(old_neurons_length):
+           if pre_mutation_neurons_genes[i][0] > last_ord_number:
+               last_ord_number = pre_mutation_neurons_genes[i][0]
 
        cdef int old_connections_length = pre_mutation_connections_genes.shape[0]
        cdef int connections_width = pre_mutation_connections_genes.shape[1]
@@ -617,8 +658,7 @@ cdef class NetworkFactory(Factory):
        cdef int number_of_available_inputs = input_indexes.size
        cdef int number_of_available_outputs = output_indexes.size
        for i in range(neurons_to_add):
-
-           neurons_genes[i+old_neurons_length][0] = i+old_neurons_length
+           neurons_genes[i+old_neurons_length][0] = i+last_ord_number+1
            neurons_genes[i+old_neurons_length][1] = types_of_added_neurons[i]
            neurons_genes[i+old_neurons_length][2] = iteration
            neurons_genes[i+old_neurons_length][3] = activation_functions[randint(0,length_of_activation_f)]
@@ -627,74 +667,27 @@ cdef class NetworkFactory(Factory):
            if types_of_added_neurons[i] == 0:
 
                connections_genes[counter+old_connections_length][0] = input_indexes[randint(0,number_of_available_inputs)]/1.
-               connections_genes[counter+old_connections_length][1] = (i+old_neurons_length)/1.
+               connections_genes[counter+old_connections_length][1] = neurons_genes[i+old_neurons_length][0]/1.
                connections_genes[counter+old_connections_length][2] = weight
                connections_genes[counter+old_connections_length][3] = 1.
-               connections_genes[counter+old_connections_length][4] = iteration
+               connections_genes[counter+old_connections_length][4] = iteration/1.
                connections_genes[counter+old_connections_length][5] = mutation_rate
 
                counter += 1
 
            if types_of_added_neurons[i] == 2:
-               connections_genes[counter+old_connections_length][0] = (i+old_neurons_length)/1.
+               connections_genes[counter+old_connections_length][0] = neurons_genes[i+old_neurons_length][0]/1.
                connections_genes[counter+old_connections_length][1] = output_indexes[randint(0, number_of_available_outputs)]/1.
                connections_genes[counter+old_connections_length][2] = weight
                connections_genes[counter+old_connections_length][3] = 1.
-               connections_genes[counter+old_connections_length][4] = iteration
+               connections_genes[counter+old_connections_length][4] = iteration/1.
                connections_genes[counter+old_connections_length][5] = mutation_rate
+
+               counter += 1
 
        return neurons_genes, mutation_genes, connections_genes
 
 
-    @cython.boundscheck(False)
-    @cython.wraparound(False)
-    cdef double [:,:] initialize_connections_with_reordering(self,
-                                                             double [:,:] matrix,
-                                                             double [:,:] connections_genes,
-                                                             int number_of_inputs,
-                                                             dict matches,
-                                                             int[:, :] neurons_genes) nogil:
-
-       cdef Py_ssize_t i
-       cdef int from_
-       cdef int to_
-       cdef int input_index
-
-       cdef int length = connections_genes.shape[0]
-
-       for i in range(length):
-           if connections_genes[i][3]==1 and connections_genes[i][1] >= 0: # checks activity status of a connection and whether it's not an output connection
-
-
-           # if it is input -> input neuron connection
-               if connections_genes[i][0]<0:
-
-                   with gil:
-                   # since numeration starts with -1
-                       from_ = abs(int(connections_genes[i][0]))-1
-                       to_ = int(connections_genes[i][1])
-
-                       assert to_ in matches, f'No such neuron {to_, np.asarray(connections_genes[i]),matches}'
-                       to_ = matches[to_]
-
-                   matrix[to_][from_] = connections_genes[i][2]
-
-               elif connections_genes[i][0] >= 0:
-
-                   with gil:
-
-                       from_ = int(connections_genes[i][0])
-                       to_ = int(connections_genes[i][1])
-
-                       assert from_ in matches, f'No such neuron {from_, np.asarray(connections_genes), matches}'
-                       assert to_ in matches, f'No such neuron {to_, np.asarray(connections_genes), matches}'
-
-                       from_ = matches[from_] + number_of_inputs
-                       to_ = matches[to_]
-
-                   matrix[to_][from_] = connections_genes[i][2]
-
-       return matrix
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -713,16 +706,15 @@ cdef class NetworkFactory(Factory):
 
        if what_parameter_is_changed == 0:
 
-           if connections_genes[order_number][what_parameter_is_changed] >= 0:
+           if connections_genes[order_number][0] >= 0 and connections_genes[order_number][1] >= 0:
                connections_genes[order_number][what_parameter_is_changed] = \
                                                random_neuron /1.
-            # same block for output neurons
 
 
 
        elif what_parameter_is_changed == 1:
 
-           if connections_genes[order_number][what_parameter_is_changed] >= 0:
+           if connections_genes[order_number][1] >= 0 and connections_genes[order_number][0] >= 0:
                connections_genes[order_number][what_parameter_is_changed] = \
                                                random_neuron /1.
 
@@ -777,7 +769,7 @@ cdef class NetworkFactory(Factory):
            new_connections_genes[i+connections_genes_length][1] = neurons_genes[randint(0, neurons_genes_length)][0]/1.
            new_connections_genes[i+connections_genes_length][2] = mean_weight
            new_connections_genes[i+connections_genes_length][3] = 1.       # Neurons are added in active state
-           new_connections_genes[i+connections_genes_length][4] = iteration
+           new_connections_genes[i+connections_genes_length][4] = iteration/1.
            new_connections_genes[i+connections_genes_length][5] = mean_mutation_rate
 
 
