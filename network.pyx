@@ -28,7 +28,7 @@ cdef class Network:
         for i in range(length):
             for j in range(width):
               self.neurons_genes[i][j] = neurons_genes[i][j]
-              
+
             self.mutation_genes[i] = mutation_genes[i]
 
         with gil:
@@ -48,3 +48,5 @@ cdef class Network:
         for i in range(length):
             for j in prange(width):
               self.matrix[i][j] = matrix[i][j]
+
+        self.efficiency = 0.
