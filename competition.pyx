@@ -151,12 +151,12 @@ cdef class Mating:
                     with nogil:
                         while parent_1 == -1:
                             rand_n = randint(0, number_of_networks)
-                            if efficiencies[rand_n] >= rand() / RAND_MAX and efficiencies[rand_n] >= self.limit :
+                            if efficiencies[rand_n] >= self.limit :
                                 parent_1 = rand_n
 
                         while parent_2 == -1:
                             rand_n = randint(0, number_of_networks)
-                            if efficiencies[rand_n] >= rand() / RAND_MAX and efficiencies[rand_n] >= self.limit:
+                            if efficiencies[rand_n] >= self.limit:
                                 parent_2 = rand_n
 
                     networks[i] = self.create_new_network(factory,

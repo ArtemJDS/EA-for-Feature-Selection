@@ -234,3 +234,5 @@ cdef class NetworkFactory(Factory):
                                     double[:,:] connections_genes,
                                     int number_of_connections_to_be_added,
                                     int iteration)
+                                    
+    cdef double[:,:]  check_for_dublication(self)

@@ -279,13 +279,19 @@ cdef class NetworkFactory(Factory):
         cdef int neurons_length_parent_1 = parent_1.neurons_genes.shape[0]
         cdef int neurons_length_parent_2 = parent_2.neurons_genes.shape[0]
 
+        cdef int longer_connections_genome
+        if length_parent_1 >= length_parent_2:
+            longer_connections_genome = length_parent_1
+        else:
+            longer_connections_genome = length_parent_2
+
         cdef int length_of_matches = self.matches.shape[0]
         cdef int index_of_new_neuron_in_matches
         cdef int index_of_old_neuron
 
-        cdef double[:,:] long_connections_genes = np.empty(((length_of_matches+1)*length_of_matches, width), dtype=np.float64)
+        cdef double[:,:] long_connections_genes = np.empty(((longer_connections_genome+1)*length_of_matches, width), dtype=np.float64)
 
-        for i in prange((length_of_matches+1)*length_of_matches, nogil = True):
+        for i in prange((longer_connections_genome+1)*length_of_matches, nogil = True):
             long_connections_genes[i][3] =-1.
 
         for i in prange(length_of_matches, nogil = True):
@@ -307,33 +313,33 @@ cdef class NetworkFactory(Factory):
                                     if self.matches[k][0] == parent_1.connections_genes[j][1] and self.matches[k][3] != 1 :
                                         if self.matches[k][1] == 1:
 
-                                            long_connections_genes[i *(length_of_matches+1) + j][0] = index_of_new_neuron_in_matches/1.
-                                            long_connections_genes[i *(length_of_matches+1) + j][1] = self.matches[k][2]/1.
-                                            long_connections_genes[i *(length_of_matches+1) + j][2] = parent_1.connections_genes[j][2]
-                                            long_connections_genes[i *(length_of_matches+1) + j][3] = parent_1.connections_genes[j][3]
-                                            long_connections_genes[i *(length_of_matches+1) + j][4] = parent_1.connections_genes[j][4]
-                                            long_connections_genes[i *(length_of_matches+1) + j][5] = parent_1.connections_genes[j][5]
+                                            long_connections_genes[i *(longer_connections_genome+1) + j][0] = index_of_new_neuron_in_matches/1.
+                                            long_connections_genes[i *(longer_connections_genome+1) + j][1] = self.matches[k][2]/1.
+                                            long_connections_genes[i *(longer_connections_genome+1) + j][2] = parent_1.connections_genes[j][2]
+                                            long_connections_genes[i *(longer_connections_genome+1) + j][3] = parent_1.connections_genes[j][3]
+                                            long_connections_genes[i *(longer_connections_genome+1) + j][4] = parent_1.connections_genes[j][4]
+                                            long_connections_genes[i *(longer_connections_genome+1) + j][5] = parent_1.connections_genes[j][5]
 
                                             self.matches[k][3] = 1
 
 
                             if parent_1.connections_genes[j][1] < 0 :
-                                long_connections_genes[i *(length_of_matches+1) + length_of_matches][0] = index_of_new_neuron_in_matches/1.
-                                long_connections_genes[i *(length_of_matches+1) + length_of_matches][1] = parent_1.connections_genes[j][1]
-                                long_connections_genes[i *(length_of_matches+1) + length_of_matches][2] = parent_1.connections_genes[j][2]
-                                long_connections_genes[i *(length_of_matches+1) + length_of_matches][3] = parent_1.connections_genes[j][3]
-                                long_connections_genes[i *(length_of_matches+1) + length_of_matches][4] = parent_1.connections_genes[j][4]
-                                long_connections_genes[i *(length_of_matches+1) + length_of_matches][5] = parent_1.connections_genes[j][5]
+                                long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][0] = index_of_new_neuron_in_matches/1.
+                                long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][1] = parent_1.connections_genes[j][1]
+                                long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][2] = parent_1.connections_genes[j][2]
+                                long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][3] = parent_1.connections_genes[j][3]
+                                long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][4] = parent_1.connections_genes[j][4]
+                                long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][5] = parent_1.connections_genes[j][5]
 
 
 
                         if parent_1.connections_genes[j][0] < 0 and parent_1.connections_genes[j][1] == index_of_old_neuron:
-                            long_connections_genes[i *(length_of_matches+1) + length_of_matches][0] = parent_1.connections_genes[j][0]
-                            long_connections_genes[i *(length_of_matches+1) + length_of_matches][1] = index_of_new_neuron_in_matches/1.
-                            long_connections_genes[i *(length_of_matches+1) + length_of_matches][2] = parent_1.connections_genes[j][2]
-                            long_connections_genes[i *(length_of_matches+1) + length_of_matches][3] = parent_1.connections_genes[j][3]
-                            long_connections_genes[i *(length_of_matches+1) + length_of_matches][4] = parent_1.connections_genes[j][4]
-                            long_connections_genes[i *(length_of_matches+1) + length_of_matches][5] = parent_1.connections_genes[j][5]
+                            long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][0] = parent_1.connections_genes[j][0]
+                            long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][1] = index_of_new_neuron_in_matches/1.
+                            long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][2] = parent_1.connections_genes[j][2]
+                            long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][3] = parent_1.connections_genes[j][3]
+                            long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][4] = parent_1.connections_genes[j][4]
+                            long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][5] = parent_1.connections_genes[j][5]
 
             elif self.matches[index_of_new_neuron_in_matches][1] == 2:
 
@@ -351,33 +357,34 @@ cdef class NetworkFactory(Factory):
                                     if self.matches[k][0] == parent_2.connections_genes[j][1] and self.matches[k][3] != 1 :
                                         if self.matches[k][1] == 2:
 
-                                            long_connections_genes[i *(length_of_matches+1) + j][0] = index_of_new_neuron_in_matches/1.
-                                            long_connections_genes[i *(length_of_matches+1) + j][1] = self.matches[k][2]/1.
-                                            long_connections_genes[i *(length_of_matches+1) + j][2] = parent_2.connections_genes[j][2]
-                                            long_connections_genes[i *(length_of_matches+1) + j][3] = parent_2.connections_genes[j][3]
-                                            long_connections_genes[i *(length_of_matches+1) + j][4] = parent_2.connections_genes[j][4]
-                                            long_connections_genes[i *(length_of_matches+1) + j][5] = parent_2.connections_genes[j][5]
+                                            long_connections_genes[i *(longer_connections_genome+1) + j][0] = index_of_new_neuron_in_matches/1.
+                                            long_connections_genes[i *(longer_connections_genome+1) + j][1] = self.matches[k][2]/1.
+                                            long_connections_genes[i *(longer_connections_genome+1) + j][2] = parent_2.connections_genes[j][2]
+                                            long_connections_genes[i *(longer_connections_genome+1) + j][3] = parent_2.connections_genes[j][3]
+                                            long_connections_genes[i *(longer_connections_genome+1) + j][4] = parent_2.connections_genes[j][4]
+                                            long_connections_genes[i *(longer_connections_genome+1) + j][5] = parent_2.connections_genes[j][5]
 
                                             self.matches[k][3] = 1
 
                             elif parent_2.connections_genes[j][1] < 0:
-                                long_connections_genes[i *(length_of_matches+1) + j][0] = index_of_new_neuron_in_matches/1.
-                                long_connections_genes[i *(length_of_matches+1) + j][1] = parent_2.connections_genes[j][1]
-                                long_connections_genes[i *(length_of_matches+1) + j][2] = parent_2.connections_genes[j][2]
-                                long_connections_genes[i *(length_of_matches+1) + j][3] = parent_2.connections_genes[j][3]
-                                long_connections_genes[i *(length_of_matches+1) + j][4] = parent_2.connections_genes[j][4]
-                                long_connections_genes[i *(length_of_matches+1) + j][5] = parent_2.connections_genes[j][5]
+                                long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][0] = index_of_new_neuron_in_matches/1.
+                                long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][1] = parent_2.connections_genes[j][1]
+                                long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][2] = parent_2.connections_genes[j][2]
+                                long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][3] = parent_2.connections_genes[j][3]
+                                long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][4] = parent_2.connections_genes[j][4]
+                                long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][5] = parent_2.connections_genes[j][5]
 
                         if parent_2.connections_genes[j][0] < 0 and parent_2.connections_genes[j][1] == index_of_old_neuron:
-                            long_connections_genes[i *(length_of_matches+1) + length_of_matches][0] = parent_2.connections_genes[j][0]
-                            long_connections_genes[i *(length_of_matches+1) + length_of_matches][1] = index_of_new_neuron_in_matches/1.
-                            long_connections_genes[i *(length_of_matches+1) + length_of_matches][2] = parent_2.connections_genes[j][2]
-                            long_connections_genes[i *(length_of_matches+1) + length_of_matches][3] = parent_2.connections_genes[j][3]
-                            long_connections_genes[i *(length_of_matches+1) + length_of_matches][4] = parent_2.connections_genes[j][4]
-                            long_connections_genes[i *(length_of_matches+1) + length_of_matches][5] = parent_2.connections_genes[j][5]
+                            long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][0] = parent_2.connections_genes[j][0]
+                            long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][1] = index_of_new_neuron_in_matches/1.
+                            long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][2] = parent_2.connections_genes[j][2]
+                            long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][3] = parent_2.connections_genes[j][3]
+                            long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][4] = parent_2.connections_genes[j][4]
+                            long_connections_genes[i *(longer_connections_genome+1) + longer_connections_genome][5] = parent_2.connections_genes[j][5]
 
             for k in prange(length_of_matches):
                 self.matches[k][3] = 0
+
         self.created_connections_genes = twodim_genes_cleaner(long_connections_genes,
                                                                  3,
                                                                  np.float64,
@@ -446,10 +453,6 @@ cdef class NetworkFactory(Factory):
                                                      0,
                                                      np.int32,
                                                      -1)
-        self.connections_genes = twodim_genes_cleaner(self.connections_genes,
-                                                         3,
-                                                         np.float64,
-                                                         -1)
 
 
 
@@ -480,17 +483,23 @@ cdef class NetworkFactory(Factory):
                                           self.connections_genes,
                                           i)
 
+
                     if self.connections_genes[i][5] >= rand() / (RAND_MAX * 1.0):
                         change_gene_weigth(self.connections_genes[i], 5)
         self.connections_genes = self.add_connection(self.neurons_genes,
                                                      self.connections_genes,
                                                      number_of_connections_to_be_added,
                                                      iteration)
+        self.connections_genes = twodim_genes_cleaner(self.connections_genes,
+                                                      3,
+                                                      np.float64,
+                                                      -1)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
     cdef void create_matrix(self, int number_of_inputs):
 
+        self.connections_genes = self.check_for_dublication()
         self.matrix = np.zeros((self.neurons_genes.shape[0], self.neurons_genes.shape[0]+\
                                 number_of_inputs), dtype = np.float64)
         cdef Py_ssize_t i
@@ -507,8 +516,6 @@ cdef class NetworkFactory(Factory):
                 self.connections_genes[i][0] = self.second_matches[self.connections_genes[i][0]]/1.
             if self.connections_genes[i][1] >= 0:
                 self.connections_genes[i][1] = self.second_matches[self.connections_genes[i][1]]/1.
-        print(np.asarray(self.neurons_genes))
-        print(np.asarray(self.connections_genes))
         self.matrix = self.initialize_matrix(self.matrix,
                                              self.connections_genes,
                                              number_of_inputs)
@@ -711,7 +718,6 @@ cdef class NetworkFactory(Factory):
                                                random_neuron /1.
 
 
-
        elif what_parameter_is_changed == 1:
 
            if connections_genes[order_number][1] >= 0 and connections_genes[order_number][0] >= 0:
@@ -774,3 +780,36 @@ cdef class NetworkFactory(Factory):
 
 
        return new_connections_genes
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef double[:,:]  check_for_dublication(self):
+        cdef Py_ssize_t i, j
+        cdef int length = self.connections_genes.shape[0]
+        cdef int width = self.connections_genes.shape[1]
+        cdef double first, second
+        cdef int[:] to_delete = np.zeros(length, dtype = np.int32)
+        cdef int deleted = 0
+
+        for i in range(length):
+            if to_delete[i]!=1:
+                first = self.connections_genes[i][0]
+                second = self.connections_genes[i][1]
+                for j in range(i+1, length):
+                        if first == self.connections_genes[j][0] and second == self.connections_genes[j][1] and to_delete[j]!=1 :
+                            to_delete[j] = 1
+                            deleted += 1
+
+
+        cdef double[:, :]  connections_genes = np.empty(((length - deleted), width), dtype = np.float64)
+        cdef int counter = 0
+
+
+        for i in range(length):
+            if to_delete[i] != 1:
+                for j in prange(width, nogil = True):
+                    connections_genes[i-counter][j] = self.connections_genes[i][j]
+
+            else:
+                counter += 1
+
+        return connections_genes
