@@ -234,5 +234,11 @@ cdef class NetworkFactory(Factory):
                                     double[:,:] connections_genes,
                                     int number_of_connections_to_be_added,
                                     int iteration)
-                                    
+
     cdef double[:,:]  check_for_dublication(self)
+
+cdef NetworkFactoryFair(NetworkFactory)
+
+    cdef void create_neurons_genes_through_mating(self,
+                                                  Network parent_1,
+                                                  Network parent_2)

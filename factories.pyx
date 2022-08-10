@@ -813,3 +813,117 @@ cdef class NetworkFactory(Factory):
                 counter += 1
 
         return connections_genes
+
+
+cdef NetworkFactoryFair(NetworkFactory):
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef void create_neurons_genes_through_mating(self,
+                                                  Network parent_1,
+                                                  Network parent_2):
+        # The methods differs from the parent's in relation to the probabilities
+        # of getting neurons from parents. Here the more efficient parent has
+        # advantage (greater probability of transmitting genes forward)
+
+        cdef Py_ssize_t i, j
+
+        cdef int length_parent_1 = parent_1.neurons_genes.shape[0]
+        cdef int length_parent_2 = parent_2.neurons_genes.shape[0]
+        cdef int width = parent_1.neurons_genes.shape[1]
+
+        self.first_parent = parent_1.network_order_number
+        self.second_parent = parent_2.network_order_number
+
+        cdef int number_of_neurons_in_parents = length_parent_1+length_parent_2
+        cdef int the_longest_one, the_shortes_one, longer_index
+
+        cdef double R = rand() / (RAND_MAX * 1.0)
+        cdef int number_of_neurons_in_child
+
+        if length_parent_1>=length_parent_2:
+            the_longest_one = length_parent_1
+            the_smallest_one = length_parent_2
+            longer_index = 1
+
+        else:
+            the_longest_one = length_parent_2
+            the_smallest_one = length_parent_1
+            longer_index = 2
+
+
+        if number_of_neurons_in_parents%2 == 0:
+            number_of_neurons_in_child = number_of_neurons_in_parents//2\
+                                                + randint(0,3) - 1
+
+        else:
+            number_of_neurons_in_child = (number_of_neurons_in_parents+\
+                                        1*(R >= 0.5) - 1*(R < 0.5))//2 \
+                                        + randint(0,3)-1
+
+
+        self.created_neurons_genes = np.empty((number_of_neurons_in_child, 4),
+                                    dtype = np.int32)
+        self.matches = np.empty((number_of_neurons_in_child,4),
+                                    dtype = np.int32)
+        self.created_mutation_genes = np.empty((number_of_neurons_in_child),
+                                    dtype = np.float64)
+
+        cdef double efficiency_sum = parent_1.efficiency +parent_2.efficiency
+
+        for i in prange(number_of_neurons_in_child, nogil=True):
+
+            self.matches[i][0] = randint(0, the_longest_one)      # old neuron || 1/2 parent || new neuron || used status, its index ([i]) must be identical to 'new neuron'
+            self.matches[i][2] = i
+            self.matches[i][3] = 0
+
+            if self.matches[i][0]<the_smallest_one:
+
+                if rand() / (RAND_MAX * 1.0) < parent_1.efficiency/efficiency_sum:     # here is the difference
+
+                    self.matches[i][1] = 1
+                    for j in prange(width):
+
+                        if j == 0:
+                            self.created_neurons_genes[i][j] = i
+                        else:
+                            self.created_neurons_genes[i][j] = parent_1.neurons_genes[self.matches[i][0]][j]
+
+                    self.created_mutation_genes[i] = parent_1.mutation_genes[self.matches[i][0]]
+
+                else:
+
+                    self.matches[i][1] = 2
+                    for j in prange(width):
+
+                        if j == 0:
+                           self.created_neurons_genes[i][j] = i
+                        else:
+                            self.created_neurons_genes[i][j] = parent_2.neurons_genes[self.matches[i][0]][j]
+
+                    self.created_mutation_genes[i] = parent_2.mutation_genes[self.matches[i][0]]
+
+
+            elif self.matches[i][0]>=the_smallest_one:
+
+                self.matches[i][1] = longer_index
+
+                if longer_index == 1:
+
+                    for j in prange(width):
+                        if j == 0:
+                           self.created_neurons_genes[i][j] = i
+                        else:
+                            self.created_neurons_genes[i][j] = parent_1.neurons_genes[self.matches[i][0]][j]
+
+                    self.created_mutation_genes[i] = parent_1.mutation_genes[self.matches[i][0]]
+
+                elif longer_index == 2:
+
+                    for j in prange(width):
+                        if j == 0:
+                           self.created_neurons_genes[i][j] = i
+                        else:
+                            self.created_neurons_genes[i][j] = parent_2.neurons_genes[self.matches[i][0]][j]
+
+                    self.created_mutation_genes[i] = parent_2.mutation_genes[self.matches[i][0]]
