@@ -237,7 +237,7 @@ cdef class NetworkFactory(Factory):
 
     cdef double[:,:]  check_for_dublication(self)
 
-cdef NetworkFactoryFair(NetworkFactory)
+cdef class NetworkFactoryFair(NetworkFactory)
 
     cdef void create_neurons_genes_through_mating(self,
                                                   Network parent_1,

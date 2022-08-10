@@ -815,7 +815,7 @@ cdef class NetworkFactory(Factory):
         return connections_genes
 
 
-cdef NetworkFactoryFair(NetworkFactory):
+cdef class NetworkFactoryFair(NetworkFactory):
 
     @cython.boundscheck(False)
     @cython.wraparound(False)

@@ -68,7 +68,7 @@ cdef class Mating:
                                   double WEIGHT,
                                   double MUTATION_RATE)
 
-    cdef int mating(self, Network[:] networks)
+    cdef int mating(self, Network[:] networks, NetworkFactory factory)
 
     cdef Network create_new_network(self,
                                     NetworkFactory factory,

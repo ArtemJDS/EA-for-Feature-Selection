@@ -118,7 +118,7 @@ cdef class Mating:
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
-    cdef int mating(self, Network[:] networks):
+    cdef int mating(self, Network[:] networks, NetworkFactory factory):
 
         cdef Py_ssize_t i
 
@@ -128,9 +128,6 @@ cdef class Mating:
         cdef int parent_2 = -1
         cdef int rand_n
         cdef int counter = 0
-
-        cdef NetworkFactory factory
-        factory = NetworkFactory()
 
         cdef double [:] efficiencies = np.empty(number_of_networks, dtype = np.float64) # create this to use gil inside cycle
                                                                                         # otherwise cannot
