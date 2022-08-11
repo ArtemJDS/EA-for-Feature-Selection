@@ -166,6 +166,56 @@ cdef class Mating:
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
+    cdef int mating_quantile(self, Network[:] networks, NetworkFactory factory):
+
+        cdef Py_ssize_t i
+
+        cdef int number_of_networks = networks.size
+        cdef int deleted_networks = 0
+        cdef int parent_1 = -1
+        cdef int parent_2 = -1
+        cdef int rand_n
+        cdef int counter = 0
+
+        cdef double [:] efficiencies = np.empty(number_of_networks, dtype = np.float64) # create this to use gil inside cycle
+                                                                                        # otherwise cannot
+
+        cdef int above_limit_counter = 0         # to check for extinction
+        for i in range(number_of_networks):
+            efficiencies[i] = networks[i].efficiency
+            if efficiencies[i] >= self.limit:
+                above_limit_counter += 1
+
+        if above_limit_counter < 2:
+            raise Exctinction('Too few networks with efficiency above limit')
+
+        cdef double quantile = np.quantile(efficiencies, self.limit)
+
+        for i in range(number_of_networks):
+
+            if efficiencies[i] < quantile:
+                    with nogil:
+                        while parent_1 == -1:
+                            rand_n = randint(0, number_of_networks)
+                            if efficiencies[rand_n] >= self.limit :
+                                parent_1 = rand_n
+
+                        while parent_2 == -1:
+                            rand_n = randint(0, number_of_networks)
+                            if efficiencies[rand_n] >= self.limit:
+                                parent_2 = rand_n
+
+                    networks[i] = self.create_new_network(factory,
+                                                          networks[parent_1],
+                                                          networks[parent_2],
+                                                          self.init_order_number + counter)
+                    counter += 1
+
+        return self.init_order_number + counter
+
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
     cdef Network create_new_network(self,
                                     NetworkFactory factory,
                                     Network parent_1,

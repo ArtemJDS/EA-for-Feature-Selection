@@ -70,6 +70,8 @@ cdef class Mating:
 
     cdef int mating(self, Network[:] networks, NetworkFactory factory)
 
+    cdef int mating_quantile(self, Network[:] networks, NetworkFactory factory)
+
     cdef Network create_new_network(self,
                                     NetworkFactory factory,
                                     Network parent_1,
