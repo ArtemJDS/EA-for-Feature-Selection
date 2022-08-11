@@ -183,17 +183,40 @@ cdef class Mating:
         cdef int above_limit_counter = 0         # to check for extinction
         for i in range(number_of_networks):
             efficiencies[i] = networks[i].efficiency
-            if efficiencies[i] >= self.limit:
+
+
+        cdef double quantile = np.quantile(efficiencies, self.limit)
+
+        for i in range(number_of_networks):
+            if efficiencies[i] >= quantile:
                 above_limit_counter += 1
 
         if above_limit_counter < 2:
             raise Exctinction('Too few networks with efficiency above limit')
 
-        cdef double quantile = np.quantile(efficiencies, self.limit)
+        if above_limit_counter != number_of_networks:
+            for i in range(number_of_networks):
 
-        for i in range(number_of_networks):
+                if efficiencies[i] < quantile:
+                        with nogil:
+                            while parent_1 == -1:
+                                rand_n = randint(0, number_of_networks)
+                                if efficiencies[rand_n] >= self.limit :
+                                    parent_1 = rand_n
 
-            if efficiencies[i] < quantile:
+                            while parent_2 == -1:
+                                rand_n = randint(0, number_of_networks)
+                                if efficiencies[rand_n] >= self.limit:
+                                    parent_2 = rand_n
+
+                        networks[i] = self.create_new_network(factory,
+                                                            networks[parent_1],
+                                                            networks[parent_2],
+                                                            self.init_order_number + counter)
+                        counter += 1
+        else:
+            for i in range(number_of_networks):
+                if randint(0,1) == 0:
                     with nogil:
                         while parent_1 == -1:
                             rand_n = randint(0, number_of_networks)
@@ -206,9 +229,9 @@ cdef class Mating:
                                 parent_2 = rand_n
 
                     networks[i] = self.create_new_network(factory,
-                                                          networks[parent_1],
-                                                          networks[parent_2],
-                                                          self.init_order_number + counter)
+                                                        networks[parent_1],
+                                                        networks[parent_2],
+                                                        self.init_order_number + counter)
                     counter += 1
 
         return self.init_order_number + counter
