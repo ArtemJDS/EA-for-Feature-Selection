@@ -25,9 +25,9 @@ cdef class Enviroment:
     be calculated current_concentration(int) method has to be called several times
     with different int (dependend on order number of substance to be calculated, see below).
 
-    Enviroment is 3-d array. 0-axis is y coordinate, 1-axis is x coordinate and
-    2 - axis is different substances (for each substance a new map (image) must be
-    passe to create_enviroment meethod).
+    Enviroment is n-d array. 0-axis is y coordinate, 1-axis is x coordinate and
+    2 and futher - axes are different substances (for each substance a new map (image) must be
+    passed to create_enviroment meethod).
 
     For each output methods take each output neuron, apply activation function
     and then apply sqroot() with round() (the latter rounds to the closer int)

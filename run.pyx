@@ -214,6 +214,27 @@ cdef class Enviroment:
                 else:
                     return 0.
 
+        elif a == 4:
+                if self.x + 1 < self.enviroment.shape[1] and self.x + 1 >= 0 :
+                    return self.enviroment[self.y][self.x + 1][0] - self.enviroment[self.y][self.x]
+                else:
+                    return 0.
+        elif a == 5:
+
+                if self.x - 1 < self.enviroment.shape[1] and self.x -1 >= 0:
+                    return self.enviroment[self.y][self.x - 1][0] - self.enviroment[self.y][self.x]
+                else:
+                    return 0.
+        elif a == 6:
+                if self.y - 1 >= 0 and self.y - 1 < self.enviroment.shape[0]:
+                    return self.enviroment[self.y - 1][self.x][0] - self.enviroment[self.y][self.x]
+                else:
+                    return 0.
+        elif a == 7:
+                if self.y - 1 >= 0 and self.y - 1 < self.enviroment.shape[0]:
+                    return self.enviroment[self.y - 1][self.x][0]
+                else:
+                    return 0.
 
     cdef void output_1(self) nogil:
         if self.x +  round(sqroot(self.send[0])) < self.enviroment.shape[1] and self.x +  round(sqroot(self.send[0])) >= 0 :
@@ -262,6 +283,30 @@ cdef class Enviroment:
         else:
             return 0.
 
+    cdef double df_input_1(self) nogil:
+        if self.x + 1 < self.enviroment.shape[1] and self.x + 1 >= 0 :
+            return self.enviroment[self.y][self.x + 1][0] - self.enviroment[self.y][self.x]
+        else:
+            return 0.
+
+    cdef double df_input_2(self) nogil:
+        if self.x - 1 < self.enviroment.shape[1] and self.x -1 >= 0:
+            return self.enviroment[self.y][self.x - 1][0] - self.enviroment[self.y][self.x]
+        else:
+            return 0.
+
+    cdef double df_input_3(self) nogil:
+        if self.y - 1 >= 0 and self.y - 1 < self.enviroment.shape[0]:
+            return self.enviroment[self.y - 1][self.x][0] - self.enviroment[self.y][self.x]
+        else:
+            return 0.
+
+
+    cdef double df_input_4(self) nogil:
+        if self.y - 1 >= 0 and self.y - 1 < self.enviroment.shape[0]:
+            return self.enviroment[self.y - 1][self.x][0] - self.enviroment[self.y][self.x]
+        else:
+            return 0.
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
