@@ -93,6 +93,14 @@ cdef class Enviroment:
 
     cdef double input_4(self) nogil
 
+    cdef double df_input_1(self) nogil
+
+    cdef double df_input_2(self) nogil
+
+    cdef double df_input_3(self) nogil
+
+    cdef double df_input_4(self) nogil
+
     cdef double current_concentration(self, int substance) nogil
 
     cdef void apply_activation_functions(self, int i) nogil
